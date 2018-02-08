@@ -1,4 +1,4 @@
-""" 20180207 CJS
+""" 20180207 CJuice
 This script processes the publicdata_#.txt fixed-width delimited text files. It uses the format string from
 the FME workspace attribute splitter. I wanted to examine the data and understand what was split. This python script
 will output a pipe delimited text file that you can open with excel. It does what the attribute splitter does.
