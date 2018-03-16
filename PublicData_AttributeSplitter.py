@@ -13,20 +13,20 @@ lsline = SDAT_TXT_FILE_FORMAT_STRING.split("s")
 lsline.remove('')
 lsformatstringlengths = list(map(int,lsline))
 
-def split_line_into_data(line, formatbreaklist = lsformatstringlengths):
-    old, new = 0, 0
-    data=""
+def parse_line_into_data(line, formatbreaklist = lsformatstringlengths):
+    oldindex, newindex = 0, 0
+    datastring=""
     for i in range(len(formatbreaklist)):
-        old = new
-        new = old + int(formatbreaklist[i])
+        oldindex = newindex
+        newindex = oldindex + int(formatbreaklist[i])
         if i > 0:
-            data = "{}|{}".format(data, line[old:new].strip())
+            # Data
+            datastring = "{}|{}".format(datastring, line[oldindex:newindex].strip())
         else:
-            data = "{}".format(line[old:new].strip())
-    return data
+            # Headers
+            datastring = "{}".format(line[oldindex:newindex].strip())
+    return datastring
 
 with open(public_text_file,'r') as fhand_publictextfile, open(newdatafile,'w') as fhand_newfile:
     for line in fhand_publictextfile:
-        fhand_newfile.write("{}\n".format(split_line_into_data(line)))
-
-
+        fhand_newfile.write("{}\n".format(parse_line_into_data(line)))
