@@ -1,9 +1,20 @@
 class RecordClass():
     def __init__(self, presplit_record):
-        self._two_digit_county_code = 0
-        self._four_char_county_code = ""
+        self._county_code_digit = 0
+        self._county_code_4character = ""
         self._town_code = 0
         self._finder_url = ""
-        self._latitude = 0
-        self._longitude = 0
-
+        self._google_url = r""
+        self._latitude = 0.0
+        self._longitude = 0.0
+        self._jurscode = ""
+        self._account_id = ""
+        self._resityp = ""
+        self._address = ""
+        self._strtunt = ""
+        self._addrtyp = ""
+        self._city = ""
+        self._zipcode = ""
+        self.legal_1 = ""
+        self._sdat_web_adr = r""
+        self._existing = ""
