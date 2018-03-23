@@ -1,65 +1,117 @@
 """Python version of the Real Property data process"""
 # IMPORTS
 import ProcessVariables
+import ProcessFunctions
 import RecordClass
 import os
+import sqlite3
+import timeit
+import logging
+
 # VARIABLES
-    # See ProcessVariables.py
+# See ProcessVariables.py
 
 # LOCAL FUNCTIONS
-def filereader(filepath, func):
-    counter = 0
-    with open(filepath,'r') as fhand:
-            for line in fhand:
-                if counter < 2:
-                    func(line)
-                    counter+=1
-                else:
-                    break
+# see ProcessFunctions.py
 
-def split_SDAT_line(line):
-    index = 0
-    line_parts = []
-    for item in ProcessVariables.SDAT_DATA_SPLIT_SPACE_DELIMITED_INDICES:
-        old_index = index
-        current_index = old_index + item
-        line_parts.append(line[old_index:current_index])
-        index = current_index
-        # print(index)
-    print(line_parts)
 # CLASSES
-    # See RecordClass.py
+# See RecordClass.py
+
+# LOGGING
+logging.basicConfig(filename=ProcessVariables.LOG_FILENAME, level=logging.INFO)
+
 
 # FUNCTIONALITY
 def mainfunction():
-    # Get the input files (SDAT & MDP) to process
-        # using input() OR
-        # iterate through all counties using a directory and a collection of the file pairings
-    testing_root_data_path = r"E:\DoIT_SDATRealProperty_Project\RealPropAllData"
-    for pair in ProcessVariables.SDAT_TO_MDP_DATA_FILES_MAPPING:
-        print(pair)
-        assert os.path.exists(os.path.join(testing_root_data_path,pair[0]))
-        assert os.path.exists(os.path.join(testing_root_data_path,pair[1]))
+    ProcessFunctions.print_and_log(date_time=ProcessFunctions.get_datetime_for_logging_and_printing(),
+        message=ProcessVariables.INITIATED_PROCESSING,
+        log_level=ProcessVariables.INFO_LEVEL)
 
-        # Read the SDAT data file
-            # load the records into sql database table
-            # create RecordClass Objects (while data is going into database table or afterward?)
-        filereader(os.path.join(testing_root_data_path,pair[0]), split_SDAT_line)
+    # iterate through all counties using a directory and a collection of the file pairings
+    for pair_of_files in ProcessVariables.SDAT_TO_MDP_DATA_FILES_TUPLE:
+        print(pair_of_files)
+        assert os.path.exists(os.path.join(ProcessVariables.testing_root_data_path, pair_of_files[0]))
+        assert os.path.exists(os.path.join(ProcessVariables.testing_root_data_path, pair_of_files[1]))
+
+        # Create database for county of focus and establish connection and cursor
+        ProcessFunctions.copy_template_sqldb_and_create_production_sqldb(
+            template_sqldb_path_tuple=ProcessVariables.SQLITE3_TEMPLATE_DATABASE_PATH,
+            production_sqldb_path_tuple=ProcessVariables.SQLITE3_PRODUCTION_DATABASE_PATH)
+        connection_to_production_database = sqlite3.connect(ProcessVariables.SQLITE3_PRODUCTION_DATABASE_PATH[0])
+        connection_to_production_database_cursor = connection_to_production_database.cursor()
+
+        # MDP data file
+        full_path_to_MDP_file = os.path.join(ProcessVariables.testing_root_data_path, pair_of_files[1])
+        MDP_line_generator = ProcessFunctions.file_line_reader(full_path_to_MDP_file)
+        counter_mdp = 0
+        for item in MDP_line_generator:
+            MDP_line_data_list = item.split(",")
+            if counter_mdp > 0:
+                pass
+            else:
+                local_MDP_field_index_dictionary = dict(ProcessVariables.MDP_FIELDS_OF_INTEREST_AND_INDEX_TUPLE)
+                for key in local_MDP_field_index_dictionary.keys():
+                    assert key in MDP_line_data_list
+                    local_MDP_field_index_dictionary[key] = MDP_line_data_list.index(key)
+                print(local_MDP_field_index_dictionary)
+                exit()
+            # ProcessFunctions.insert_record_into_table(cursor=connection_to_production_database_cursor,
+            #                                           table_name_tuple=,
+            #                                           column_name_tuple=,
+            #                                           record_value=)
+            if counter_mdp > 0 and counter_mdp % 10000 == 0:
+                connection_to_production_database.commit()
+                ProcessFunctions.print_and_log(
+                    date_time=ProcessFunctions.get_datetime_for_logging_and_printing(),
+                    message=ProcessVariables.DATABASE_COMMIT_SDAT.format(counter_mdp),
+                    log_level=ProcessVariables.INFO_LEVEL)
+            counter_mdp += 1
+
+        # SDAT data file
+        counter_SDAT = 0
+        full_path_to_SDAT_file = os.path.join(ProcessVariables.testing_root_data_path, pair_of_files[0])
+        SDAT_line_generator = ProcessFunctions.file_line_reader(full_path_to_SDAT_file)
+        for item in SDAT_line_generator:
+            SDAT_line_data_list = ProcessFunctions.split_SDAT_line(item)
+            SDAT_record_object = RecordClass.RecordClass(SDAT_line_data_list)
+            #TODO: put record objects into queue. When queue exceeds a size, put objects into database and empty queue.
+            #TODO: use multi-thread and have workers
+            ProcessFunctions.insert_record_into_table(cursor=connection_to_production_database_cursor,
+                                                      table_name_tuple=ProcessVariables.SDAT_TABLE_NAME,
+                                                      column_name_tuple=ProcessVariables.ACCOUNTID_FIELD,
+                                                      record_value=SDAT_record_object.account_id_from_SDAT_concat_no_leading_zeros)
+            if counter_SDAT > 0 and counter_SDAT % 10000 == 0:
+                connection_to_production_database.commit()
+                ProcessFunctions.print_and_log(
+                    date_time=ProcessFunctions.get_datetime_for_logging_and_printing(),
+                    message=ProcessVariables.DATABASE_COMMIT_SDAT.format(counter_SDAT),
+                    log_level=ProcessVariables.INFO_LEVEL)
+                counter_SDAT += 1
+        connection_to_production_database.commit()
+        ProcessFunctions.print_and_log(
+            date_time=ProcessFunctions.get_datetime_for_logging_and_printing(),
+            message=ProcessVariables.DATABASE_COMMIT_SDAT.format(counter_SDAT),
+            log_level=ProcessVariables.INFO_LEVEL)
+        connection_to_production_database.close()
+
+        #TODO: remove break once can process every pair of files
+        break
+
         # Put both datasources into database tables
-            # Option 1:
-                # Instead of joining the tables, use the AccountID to query the MDP data for the relevant record.
-                    # QUESTION: Is indexing automatic or do I need to create this?
-            # Option 2:
-                # perform the joining of the two tables like the current FME process
-                # Prep the SDAT file for joining by creating the Account ID
+        # Option 1:
+        # Instead of joining the tables, use the AccountID to query the MDP data for the relevant record.
+        # QUESTION: Is indexing automatic or do I need to create this?
+        # Option 2:
+        # perform the joining of the two tables like the current FME process
+        # Prep the SDAT file for joining by creating the Account ID
         # Build the Account ID's
-            # Handle baltimore city special functionality
+        # Handle baltimore city special functionality
         # Reproject lat/lon
         # IMPS string update
         # Make FINDER link
-            # handle empty data links
+        # handle empty data links
         # Make Google link
-            # handle empty data links
+        # handle empty data links
         # Map county code to county name string
         # Clean dashes from CurCycleData_LandValue
         # Dwelling Construction Code to string replacement value
@@ -80,10 +132,10 @@ def mainfunction():
         #
 
 
-
-
 # DELETIONS & CLEANUP
 
 if __name__ == "__main__":
     print("in main")
+    start = timeit.default_timer()
     mainfunction()
+    print("Took: {} seconds".format(timeit.default_timer() - start))

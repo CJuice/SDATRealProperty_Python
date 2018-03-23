@@ -1,5 +1,29 @@
 """Master variable file"""
+from datetime import date
+#___________Testing___________
+testing_root_data_path = r"E:\DoIT_SDATRealProperty_Project\RealPropAllData"
+sqlite_file_TESTING = r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\my_test_db.sqlite"
 directory_of_files_to_process_TESTING = r"E:\DoIT_SDATRealProperty_Project\RealPropAllData\DataForTesting"
+line_limit_amount = -9999
+SQLITE3_TEMPLATE_DATABASE_PATH = (r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\my_test_db.sqlite",)
+SQLITE3_PRODUCTION_DATABASE_PATH = (r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\my_test_db99.sqlite",)
+# ______________________________
+
+
+INFO_LEVEL = "info"
+WARNING_LEVEL = "warning"
+ERROR_LEVEL = "error"
+
+DATE_TODAY_NODASHES = str(date.today()).replace("-", "")
+PSA_PROCESS_COMPLETE = "Process complete."
+LOG_FILENAME = "LOG_RealProperty.log"
+
+
+# PRINTING AND MESSAGING
+INITIATED_PROCESSING = "Initiated Processing"
+DATABASE_COMMIT_SDAT = "SDAT Database Commit @ {} records"
+DATABASE_COMMIT_MDP = "MDP Database Commit @ {} records"
+
 # timestamp
 GOOGLE_ROOT_URL = (r"",)
 GOOGLE_URL_QUERYSTRING_PARAMETER_SEPARATOR = (",",)
@@ -10,6 +34,20 @@ MARYLAND_ABBREVIATION = ("MD",)
 SOURCE_COORDINATE_SYSTEM_EPSG = (26985,)
 DESTINATION_COORDINATE_SYSTE_EPSG = (4326,)
 BLANK_STRING = ("",)
+
+# Database Variables
+SDAT_TABLE_NAME = ("SDAT",)
+MDP_TABLE_NAME = ("MDP",)
+ACCOUNTID_FIELD = ("ACCTID",)
+ACCOUNTID_FIELD_TYPE = ("INTEGER",)
+SQL_INSERT_STRING = "INSERT INTO {table_name} ({column_name}) VALUES ({record_value})"
+
+MDP_FIELDS_OF_INTEREST_AND_INDEX_TUPLE = (("JURSCODE",0), ("ACCTID",0), ("DIGXCORD",0),
+                                          ( "DIGYCORD",0), ("RESITYP",0), ("ADDRESS",0),
+                                          ("STRTUNT",0), ("ADDRTYP",0), ("CITY",0),
+                                          ("ZIPCODE",0), ("LEGAL1",0), ("SDATWEBADR",0),
+                                          ("EXISTING",0))
+
 SDAT_DATA_SPLIT_SPACE_DELIMITED_INDICES = (
 2, 2, 12, 2, 2, 1, 34, 34, 25, 30, 30, 22, 2, 5, 4, 4, 20, 24, 24, 5, 1, 2, 22, 5, 22, 5, 4, 6, 3, 5, 4, 3, 5, 4, 1, 3,
 4, 6, 3, 5, 5, 5, 5, 5, 5, 1, 1, 1, 3, 2, 1, 1, 4, 4, 1, 6, 2, 2, 2, 1, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 3,
@@ -19,31 +57,33 @@ SDAT_DATA_SPLIT_SPACE_DELIMITED_INDICES = (
 1, 9, 9, 9, 9, 9, 9, 1, 1, 9, 9, 9, 1, 8, 8, 8, 8, 8, 10, 1, 8, 9, 8, 8, 10, 1, 8, 8, 2, 8, 8, 8, 8, 8, 1, 1, 2, 2, 1,
 2, 4, 5, 5, 1, 4, 2, 7, 12, 1, 8, 8, 4, 9, 9, 9, 9, 9, 9, 7, 7, 7, 1, 8, 150, 1, 8, 3, 3, 3, 4, 4, 2, 7, 4, 18, 2, 12,
 6, 3, 1, 8, 1, 8, 1, 8, 8, 8, 4, 1, 1)
-SDAT_TO_MDP_DATA_FILES_MAPPING = (('PublicData_01.txt', 'ALLE.csv'),
-                                  ('PublicData_02.txt', 'ANNE.csv'),
-                                  ('PublicData_03.txt', 'BACI.csv'),
-                                  ('PublicData_04.txt', 'BACO.csv'),
-                                  ('PublicData_05.txt', 'CALV.csv'),
-                                  ('PublicData_06.txt', 'CARO.csv'),
-                                  ('PublicData_07.txt', 'CARR.csv'),
-                                  ('PublicData_08.txt', 'CECI.csv'),
-                                  ('PublicData_09.txt', 'CHAR.csv'),
-                                  ('PublicData_10.txt', 'DORC.csv'),
-                                  ('PublicData_11.txt', 'FRED.csv'),
-                                  ('PublicData_12.txt', 'GARR.csv'),
-                                  ('PublicData_13.txt', 'HARF.csv'),
-                                  ('PublicData_14.txt', 'HOWA.csv'),
-                                  ('PublicData_15.txt', 'KENT.csv'),
-                                  ('PublicData_16.txt', 'MONT.csv'),
-                                  ('PublicData_17.txt', 'PRIN.csv'),
-                                  ('PublicData_18.txt', 'QUEE.csv'),
-                                  ('PublicData_19.txt', 'STMA.csv'),
-                                  ('PublicData_20.txt', 'SOME.csv'),
-                                  ('PublicData_21.txt', 'TALB.csv'),
-                                  ('PublicData_22.txt', 'WASH.csv'),
-                                  ('PublicData_23.txt', 'WICO.csv'),
-                                  ('PublicData_24.txt', 'WORC.csv'),
-                                  )
+
+SDAT_TO_MDP_DATA_FILES_TUPLE = (('PublicData_01.txt', 'ALLE.csv'),
+                                ('PublicData_02.txt', 'ANNE.csv'),
+                                ('PublicData_03.txt', 'BACI.csv'),
+                                ('PublicData_04.txt', 'BACO.csv'),
+                                ('PublicData_05.txt', 'CALV.csv'),
+                                ('PublicData_06.txt', 'CARO.csv'),
+                                ('PublicData_07.txt', 'CARR.csv'),
+                                ('PublicData_08.txt', 'CECI.csv'),
+                                ('PublicData_09.txt', 'CHAR.csv'),
+                                ('PublicData_10.txt', 'DORC.csv'),
+                                ('PublicData_11.txt', 'FRED.csv'),
+                                ('PublicData_12.txt', 'GARR.csv'),
+                                ('PublicData_13.txt', 'HARF.csv'),
+                                ('PublicData_14.txt', 'HOWA.csv'),
+                                ('PublicData_15.txt', 'KENT.csv'),
+                                ('PublicData_16.txt', 'MONT.csv'),
+                                ('PublicData_17.txt', 'PRIN.csv'),
+                                ('PublicData_18.txt', 'QUEE.csv'),
+                                ('PublicData_19.txt', 'STMA.csv'),
+                                ('PublicData_20.txt', 'SOME.csv'),
+                                ('PublicData_21.txt', 'TALB.csv'),
+                                ('PublicData_22.txt', 'WASH.csv'),
+                                ('PublicData_23.txt', 'WICO.csv'),
+                                ('PublicData_24.txt', 'WORC.csv'),
+                                )
+
 COUNTY_CODE_DIGIT_TO_CHAR_VALUES = (('01', 'ALLE'),
                               ('02', 'ANNE'),
                               ('03', 'BACI'),
@@ -69,6 +109,7 @@ COUNTY_CODE_DIGIT_TO_CHAR_VALUES = (('01', 'ALLE'),
                               ('23', 'WICO'),
                               ('24', 'WORC'),
                               )
+
 COUNTY_CODE_TO_COUNTY_NAME = (("01", "Allegany"),
                               ("02", "Anne Arundel"),
                               ("03", "Baltimore City"),
@@ -94,6 +135,7 @@ COUNTY_CODE_TO_COUNTY_NAME = (("01", "Allegany"),
                               ("23", "Wicomico"),
                               ("24", "Worcester"),
                               )
+
 DWELLING_STORY_TO_VALUE = (('0001', 'STRY 1 Story No Basement (0001)'),
                            ('0002', 'STRY 1 Story With Basement (0002)'),
                            ('0003', 'STRY 1 1/2 Story No Basement (0003)'),
@@ -257,6 +299,7 @@ DWELLING_STORY_TO_VALUE = (('0001', 'STRY 1 Story No Basement (0001)'),
                            ('CND', 'HOUSING Condominium(s) (CND)'),
                            ('MH1', 'HOUSING Mobile Home(s) (MH1)'),
                            )
+
 DWELLING_TYPE_TO_VALUE = (('00001', 'DWEL Standard Unit (0001)'),
                           ('00002', 'DWEL End Unit (0002)'),
                           ('00003', 'DWEL Center Unit (0003)'),
@@ -394,6 +437,7 @@ DWELLING_TYPE_TO_VALUE = (('00001', 'DWEL Standard Unit (0001)'),
                           ('C313', 'HOUSING 4 Bedrooms (C313)'),
                           ('C314', 'AUTO Parking Space (C314)'),
                           )
+
 TOWN_CODE_DIGIT_TO_CHAR_VALUES = (("1001", "ALLE Cumberland"),
                                   ("1011", "ALLE Frostburg"),
                                   ("1201", "ALLE Barton"),
