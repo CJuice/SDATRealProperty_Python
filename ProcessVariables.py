@@ -5,8 +5,8 @@ testing_root_data_path = r"E:\DoIT_SDATRealProperty_Project\RealPropAllData"
 sqlite_file_TESTING = r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\my_test_db.sqlite"
 directory_of_files_to_process_TESTING = r"E:\DoIT_SDATRealProperty_Project\RealPropAllData\DataForTesting"
 line_limit_amount = -9999
-SQLITE3_TEMPLATE_DATABASE_PATH = (r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\my_test_db.sqlite",)
-SQLITE3_PRODUCTION_DATABASE_PATH = (r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\my_test_db99.sqlite",)
+SQLITE3_TEMPLATE_DATABASE_PATH = (r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\my_test_db_template.sqlite",)
+SQLITE3_PRODUCTION_DATABASE_PATH = (r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\my_test_db_production.sqlite",)
 # ______________________________
 
 
@@ -40,13 +40,15 @@ SDAT_TABLE_NAME = ("SDAT",)
 MDP_TABLE_NAME = ("MDP",)
 ACCOUNTID_FIELD = ("ACCTID",)
 ACCOUNTID_FIELD_TYPE = ("INTEGER",)
-SQL_INSERT_STRING = "INSERT INTO {table_name} ({column_name}) VALUES ({record_value})"
+SQL_INSERT_STRING_PART_1of3 = ("INSERT INTO {table_name} ",)
+SQL_INSERT_STRING_PART_2of3 = ("(ACCTID, JURSCODE, DIGXCORD, DIGYCORD, RESITYP, ADDRESS, STRTUNT, CITY, ZIPCODE, LEGAL1, SDATWEBADR, EXISTING) VALUES ",)
+SQL_INSERT_STRING_PART_3of3 = ("({acctid}, {jurscode}, {digxcord}, {digycord}, {resityp}, {address}, {strtunt}, {city}, {zipcode}, {legal1}, {sdatwebadr}, {existing})",)
 
 MDP_FIELDS_OF_INTEREST_AND_INDEX_TUPLE = (("JURSCODE",0), ("ACCTID",0), ("DIGXCORD",0),
                                           ( "DIGYCORD",0), ("RESITYP",0), ("ADDRESS",0),
-                                          ("STRTUNT",0), ("ADDRTYP",0), ("CITY",0),
-                                          ("ZIPCODE",0), ("LEGAL1",0), ("SDATWEBADR",0),
-                                          ("EXISTING",0))
+                                          ("STRTUNT",0), ("CITY",0), ("ZIPCODE",0),
+                                          ("LEGAL1",0), ("SDATWEBADR",0),("EXISTING",0),
+                                          )
 
 SDAT_DATA_SPLIT_SPACE_DELIMITED_INDICES = (
 2, 2, 12, 2, 2, 1, 34, 34, 25, 30, 30, 22, 2, 5, 4, 4, 20, 24, 24, 5, 1, 2, 22, 5, 22, 5, 4, 6, 3, 5, 4, 3, 5, 4, 1, 3,

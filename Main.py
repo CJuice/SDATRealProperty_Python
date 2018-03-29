@@ -7,6 +7,7 @@ import os
 import sqlite3
 import timeit
 import logging
+from collections import OrderedDict
 
 # VARIABLES
 # See ProcessVariables.py
@@ -24,8 +25,8 @@ logging.basicConfig(filename=ProcessVariables.LOG_FILENAME, level=logging.INFO)
 # FUNCTIONALITY
 def mainfunction():
     ProcessFunctions.print_and_log(date_time=ProcessFunctions.get_datetime_for_logging_and_printing(),
-        message=ProcessVariables.INITIATED_PROCESSING,
-        log_level=ProcessVariables.INFO_LEVEL)
+                                   message=ProcessVariables.INITIATED_PROCESSING,
+                                   log_level=ProcessVariables.INFO_LEVEL)
 
     # iterate through all counties using a directory and a collection of the file pairings
     for pair_of_files in ProcessVariables.SDAT_TO_MDP_DATA_FILES_TUPLE:
@@ -44,21 +45,35 @@ def mainfunction():
         full_path_to_MDP_file = os.path.join(ProcessVariables.testing_root_data_path, pair_of_files[1])
         MDP_line_generator = ProcessFunctions.file_line_reader(full_path_to_MDP_file)
         counter_mdp = 0
-        for item in MDP_line_generator:
-            MDP_line_data_list = item.split(",")
+        local_MDP_field_index_dictionary = OrderedDict(ProcessVariables.MDP_FIELDS_OF_INTEREST_AND_INDEX_TUPLE)
+        for MDP_Gen_Line in MDP_line_generator:
+            MDP_line_data_list = MDP_Gen_Line.split(",")
+
+            # Work on Headers
             if counter_mdp > 0:
                 pass
             else:
-                local_MDP_field_index_dictionary = dict(ProcessVariables.MDP_FIELDS_OF_INTEREST_AND_INDEX_TUPLE)
+                # Get the index position of the MDP fields of interest, from the headers, in the full MDP dataset
+                # Could hardcode this inventory but wanted to build in flexibility if field order changes
                 for key in local_MDP_field_index_dictionary.keys():
                     assert key in MDP_line_data_list
                     local_MDP_field_index_dictionary[key] = MDP_line_data_list.index(key)
-                print(local_MDP_field_index_dictionary)
-                exit()
-            # ProcessFunctions.insert_record_into_table(cursor=connection_to_production_database_cursor,
-            #                                           table_name_tuple=,
-            #                                           column_name_tuple=,
-            #                                           record_value=)
+                # print("Dictionary of MDP index positions for important fields: \n{}".format(local_MDP_field_index_dictionary)) #TESTING
+                counter_mdp += 1
+                continue
+            print("should only show when counter_mdp > 0...counter_mdp={}".format(counter_mdp))
+
+            # Work on Data
+            # NOTE: Primary key has a database index by default
+            # Build list of field name and field value pairs as tuples in a list
+            field_names_tuple = tuple([(key,key) for key in local_MDP_field_index_dictionary.keys()])
+            field_values_tuple = tuple([(str(key).lower(),MDP_line_data_list[value]) for key,value in local_MDP_field_index_dictionary.items()])
+            ProcessFunctions.insert_record_into_table(cursor=connection_to_production_database_cursor,
+                                                      table_name_tuple=ProcessVariables.MDP_TABLE_NAME,
+                                                      field_names_tuple=field_names_tuple,
+                                                      field_values_tuple=field_values_tuple)
+            #STOPPED
+            #TODO: Record contained an empty value and the sql fails. need to deal with nulls in data entry
             if counter_mdp > 0 and counter_mdp % 10000 == 0:
                 connection_to_production_database.commit()
                 ProcessFunctions.print_and_log(
@@ -66,16 +81,20 @@ def mainfunction():
                     message=ProcessVariables.DATABASE_COMMIT_SDAT.format(counter_mdp),
                     log_level=ProcessVariables.INFO_LEVEL)
             counter_mdp += 1
+        # commit an remaining records
+        connection_to_production_database.commit()
+        break
 
-        # SDAT data file
+        # SDAT data file. Will not be putting the data into a db.
         counter_SDAT = 0
         full_path_to_SDAT_file = os.path.join(ProcessVariables.testing_root_data_path, pair_of_files[0])
         SDAT_line_generator = ProcessFunctions.file_line_reader(full_path_to_SDAT_file)
-        for item in SDAT_line_generator:
-            SDAT_line_data_list = ProcessFunctions.split_SDAT_line(item)
+        for SDAT_Gen_Line in SDAT_line_generator:
+            SDAT_line_data_list = ProcessFunctions.split_SDAT_line(SDAT_Gen_Line)
             SDAT_record_object = RecordClass.RecordClass(SDAT_line_data_list)
-            #TODO: put record objects into queue. When queue exceeds a size, put objects into database and empty queue.
-            #TODO: use multi-thread and have workers
+            # TODO: Select data from MDP table and pair with SDAT data in object
+            # TODO: put record objects into queue. When queue exceeds a size, put objects into database and empty queue.
+            # TODO: use multi-thread and have workers
             ProcessFunctions.insert_record_into_table(cursor=connection_to_production_database_cursor,
                                                       table_name_tuple=ProcessVariables.SDAT_TABLE_NAME,
                                                       column_name_tuple=ProcessVariables.ACCOUNTID_FIELD,
@@ -94,7 +113,7 @@ def mainfunction():
             log_level=ProcessVariables.INFO_LEVEL)
         connection_to_production_database.close()
 
-        #TODO: remove break once can process every pair of files
+        # TODO: remove break once can process every pair of files
         break
 
         # Put both datasources into database tables

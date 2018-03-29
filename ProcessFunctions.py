@@ -5,6 +5,7 @@ import shutil
 import logging
 import datetime
 
+
 def print_and_log(date_time, message, log_level):
     """
     Print and log any provided message based on the indicated logging level.
@@ -22,29 +23,24 @@ def print_and_log(date_time, message, log_level):
     print("{} : {}".format(date_time, message))
     return
 
-#TODO: move to the native functionality for date and time printing using the .format() way
+
 def get_datetime_for_logging_and_printing():
     """
     Generate a pre-formatted date and time string for logging and printing purposes.
-    :return: String {}/{}/{} UTC[{}:{}:{}] usable in logging, and printing statements if desired
+    :return: String Year/Month/Day Hour:Minute:Second usable in logging, and printing statements if desired
     """
-    tupTodayDateTime = datetime.datetime.utcnow().timetuple()
-    strTodayDateTimeForLogging = "{}/{}/{} UTC[{}:{}:{}]".format(tupTodayDateTime[0]
-                                                                 , tupTodayDateTime[1]
-                                                                 , tupTodayDateTime[2]
-                                                                 , tupTodayDateTime[3]
-                                                                 , tupTodayDateTime[4]
-                                                                 , tupTodayDateTime[5])
-    return strTodayDateTimeForLogging
+    return '{:%Y/%m/%d %H:%M:%S}'.format(datetime.datetime.now())
+
 
 # SDAT AND MDP FILE FUNCTIONS
 def file_line_reader(filepath):
-    with open(filepath,'r') as fhand:
-            for line in fhand:
-                line = line.strip()
-                yield line
+    with open(filepath, 'r') as fhand:
+        for line in fhand:
+            line = line.strip()
+            yield line
 
-def split_SDAT_line(line, delimeter_list = ProcessVariables.SDAT_DATA_SPLIT_SPACE_DELIMITED_INDICES):
+
+def split_SDAT_line(line, delimeter_list=ProcessVariables.SDAT_DATA_SPLIT_SPACE_DELIMITED_INDICES):
     index = 0
     line_parts = []
     for item in delimeter_list:
@@ -54,6 +50,7 @@ def split_SDAT_line(line, delimeter_list = ProcessVariables.SDAT_DATA_SPLIT_SPAC
         line_parts.append(data.strip())
         index = current_index
     return line_parts
+
 
 # DATABASE RELATED FUNCTIONS
 def copy_template_sqldb_and_create_production_sqldb(template_sqldb_path_tuple, production_sqldb_path_tuple):
@@ -75,10 +72,22 @@ def copy_template_sqldb_and_create_production_sqldb(template_sqldb_path_tuple, p
         exit()
     return
 
-def insert_record_into_table(cursor, table_name_tuple, column_name_tuple, record_value):
-    cursor.execute(ProcessVariables.SQL_INSERT_STRING.format(table_name=table_name_tuple[0],
-                                                             column_name=column_name_tuple[0],
-                                                             record_value=record_value))
+
+def insert_record_into_table(cursor, table_name_tuple, field_names_tuple, field_values_tuple):
+    field_names_dict = dict(field_names_tuple)
+    field_values_dict = dict(field_values_tuple)
+    sql_insert_string = ProcessVariables.SQL_INSERT_STRING_PART_1of3[0].format(table_name=table_name_tuple[0]) + \
+                        ProcessVariables.SQL_INSERT_STRING_PART_2of3[0].format(**field_names_dict) + \
+                        ProcessVariables.SQL_INSERT_STRING_PART_3of3[0].format(**field_values_dict)
+    print(sql_insert_string)
+    try:
+        cursor.execute(sql_insert_string)
+    except sqlite3.IntegrityError:
+        print_and_log(date_time=get_datetime_for_logging_and_printing(),
+                      message='ERROR: ID already exists in PRIMARY KEY column {}'.format("ACCTID"),
+                      log_level=ProcessVariables.ERROR_LEVEL)
+    # "INSERT INTO {table_name} ({ACCTID}, {JURSCODE}, {DIGXCORD}, {DIGYCORD}, {RESITYP}, {ADDRESS}, {STRTUNT}, {CITY}, {ZIPCODE}, {LEGAL1}, {SDATWEBADR}, {EXISTING}) VALUES ({acctid}, {jurscode}, {digxcord}, {digycord}, {resityp}, {address}, {strtunt}, {city}, {zipcode}, {legal1}, {sdatwebadr}, {existing})"
+
 # def delete_file(path):
 # #if exists already, delete to avoid error
 #     if os.path.exists(path):
@@ -108,5 +117,3 @@ def insert_record_into_table(cursor, table_name_tuple, column_name_tuple, record
 #     conn.commit()
 #     conn.close()
 #     return
-
-
