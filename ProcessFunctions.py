@@ -53,15 +53,16 @@ def split_SDAT_line(line, delimeter_list=ProcessVariables.SDAT_DATA_SPLIT_SPACE_
 
 
 # DATABASE RELATED FUNCTIONS
-def copy_template_sqldb_and_create_production_sqldb(template_sqldb_path_tuple, production_sqldb_path_tuple):
+def copy_template_sqldb_and_create_production_sqldb(template_sqldb_path_tuple, production_sqldb_path):
     # if exists already, delete to avoid error
+    template_sqldb_path = template_sqldb_path_tuple[0]
     try:
-        if not os.path.exists(production_sqldb_path_tuple[0]) and os.path.exists(template_sqldb_path_tuple[0]):
-            shutil.copyfile(template_sqldb_path_tuple[0], production_sqldb_path_tuple[0])
-        elif os.path.exists(production_sqldb_path_tuple[0]) and os.path.exists(template_sqldb_path_tuple[0]):
-            os.remove(production_sqldb_path_tuple[0])
-            shutil.copyfile(template_sqldb_path_tuple[0], production_sqldb_path_tuple[0])
-        elif not os.path.exists(template_sqldb_path_tuple[0]):
+        if not os.path.exists(production_sqldb_path) and os.path.exists(template_sqldb_path):
+            shutil.copyfile(template_sqldb_path, production_sqldb_path)
+        elif os.path.exists(production_sqldb_path) and os.path.exists(template_sqldb_path):
+            os.remove(production_sqldb_path)
+            shutil.copyfile(template_sqldb_path, production_sqldb_path)
+        elif not os.path.exists(template_sqldb_path):
             print("the template sqlite3 db doesn't exist")
             exit()
         else:

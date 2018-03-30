@@ -6,7 +6,7 @@ sqlite_file_TESTING = r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_Python
 directory_of_files_to_process_TESTING = r"E:\DoIT_SDATRealProperty_Project\RealPropAllData\DataForTesting"
 line_limit_amount = -9999
 SQLITE3_TEMPLATE_DATABASE_PATH = (r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\my_test_db_template.sqlite",)
-SQLITE3_PRODUCTION_DATABASE_PATH = (r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\my_test_db_production.sqlite",)
+SQLITE3_PRODUCTION_DATABASE_PATH = (r"E:\DoIT_SDATRealProperty_Project\SDATRealProperty_PythonProducts\{}_db_production.sqlite",)
 # ______________________________
 
 

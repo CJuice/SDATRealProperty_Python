@@ -37,10 +37,12 @@ def mainfunction():
         assert os.path.exists(os.path.join(ProcessVariables.testing_root_data_path, pair_of_files[1]))
 
         # Create database for county of focus and establish connection and cursor
+        county_abbrev = pair_of_files[1][:4]
+        local_production_database_path = ProcessVariables.SQLITE3_PRODUCTION_DATABASE_PATH[0].format(county_abbrev)
         ProcessFunctions.copy_template_sqldb_and_create_production_sqldb(
             template_sqldb_path_tuple=ProcessVariables.SQLITE3_TEMPLATE_DATABASE_PATH,
-            production_sqldb_path_tuple=ProcessVariables.SQLITE3_PRODUCTION_DATABASE_PATH)
-        connection_to_production_database = sqlite3.connect(ProcessVariables.SQLITE3_PRODUCTION_DATABASE_PATH[0])
+            production_sqldb_path=local_production_database_path)
+        connection_to_production_database = sqlite3.connect(local_production_database_path)
         connection_to_production_database_cursor = connection_to_production_database.cursor()
 
         # MDP data file
