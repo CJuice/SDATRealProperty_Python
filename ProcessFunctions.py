@@ -72,6 +72,37 @@ def copy_template_sqldb_and_create_production_sqldb(template_sqldb_path_tuple, p
         exit()
     return
 
+def handle_empty_values_for_sql_success(list_of_values):
+    indexcounter = 0
+    # print(list_of_values)
+    for value in list_of_values:
+        value = list(value)
+        if value[1].strip() == "":
+            list_of_values[indexcounter] = (value[0],"null")
+        indexcounter += 1
+    # print(list_of_values)
+    return list_of_values
+
+def handle_quotation_marks_for_sql_success(list_of_values):
+    indexcounter = 0
+    # print(list_of_values)
+    for value in list_of_values:
+        value = list(value)
+        flag = False
+        # if ProcessVariables.QUOTATION_CHARACTERS[0] in value[1]:
+        #     print("Special Character ': {}".format(value[1]))
+        #     value[1] = value[1].replace(ProcessVariables.QUOTATION_CHARACTERS[0],"")
+        #     # print(value[1])
+        #     flag = True
+        if ProcessVariables.QUOTATION_CHARACTERS[1] in value[1]:
+            # print("Special Character (\"):  {}".format(value[1]))
+            value[1] = value[1].replace(ProcessVariables.QUOTATION_CHARACTERS[1],"")
+            # print(value[1])
+            flag = True
+        if flag:
+            list_of_values[indexcounter] = (value[0], value[1])
+        indexcounter += 1
+    return list_of_values
 
 def insert_record_into_table(cursor, table_name_tuple, field_names_tuple, field_values_tuple):
     field_names_dict = dict(field_names_tuple)
@@ -79,13 +110,14 @@ def insert_record_into_table(cursor, table_name_tuple, field_names_tuple, field_
     sql_insert_string = ProcessVariables.SQL_INSERT_STRING_PART_1of3[0].format(table_name=table_name_tuple[0]) + \
                         ProcessVariables.SQL_INSERT_STRING_PART_2of3[0].format(**field_names_dict) + \
                         ProcessVariables.SQL_INSERT_STRING_PART_3of3[0].format(**field_values_dict)
-    print(sql_insert_string)
+    # print(sql_insert_string)
     try:
         cursor.execute(sql_insert_string)
     except sqlite3.IntegrityError:
         print_and_log(date_time=get_datetime_for_logging_and_printing(),
                       message='ERROR: ID already exists in PRIMARY KEY column {}'.format("ACCTID"),
                       log_level=ProcessVariables.ERROR_LEVEL)
+        exit()
     # "INSERT INTO {table_name} ({ACCTID}, {JURSCODE}, {DIGXCORD}, {DIGYCORD}, {RESITYP}, {ADDRESS}, {STRTUNT}, {CITY}, {ZIPCODE}, {LEGAL1}, {SDATWEBADR}, {EXISTING}) VALUES ({acctid}, {jurscode}, {digxcord}, {digycord}, {resityp}, {address}, {strtunt}, {city}, {zipcode}, {legal1}, {sdatwebadr}, {existing})"
 
 # def delete_file(path):

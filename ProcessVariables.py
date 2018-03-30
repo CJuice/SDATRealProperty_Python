@@ -34,16 +34,17 @@ MARYLAND_ABBREVIATION = ("MD",)
 SOURCE_COORDINATE_SYSTEM_EPSG = (26985,)
 DESTINATION_COORDINATE_SYSTE_EPSG = (4326,)
 BLANK_STRING = ("",)
+mdp_field_names_tuple = None
 
 # Database Variables
+QUOTATION_CHARACTERS =("'","\"",)
 SDAT_TABLE_NAME = ("SDAT",)
 MDP_TABLE_NAME = ("MDP",)
 ACCOUNTID_FIELD = ("ACCTID",)
 ACCOUNTID_FIELD_TYPE = ("INTEGER",)
 SQL_INSERT_STRING_PART_1of3 = ("INSERT INTO {table_name} ",)
-SQL_INSERT_STRING_PART_2of3 = ("(ACCTID, JURSCODE, DIGXCORD, DIGYCORD, RESITYP, ADDRESS, STRTUNT, CITY, ZIPCODE, LEGAL1, SDATWEBADR, EXISTING) VALUES ",)
-SQL_INSERT_STRING_PART_3of3 = ("({acctid}, {jurscode}, {digxcord}, {digycord}, {resityp}, {address}, {strtunt}, {city}, {zipcode}, {legal1}, {sdatwebadr}, {existing})",)
-
+SQL_INSERT_STRING_PART_2of3 = ("""(ACCTID, JURSCODE, DIGXCORD, DIGYCORD, RESITYP, ADDRESS, STRTUNT, CITY, ZIPCODE, LEGAL1, SDATWEBADR, EXISTING) VALUES """,)
+SQL_INSERT_STRING_PART_3of3 = ("""({acctid}, \"{jurscode}\", {digxcord}, {digycord}, \"{resityp}\", \"{address}\", \"{strtunt}\", \"{city}\", \"{zipcode}\", \"{legal1}\", \"{sdatwebadr}\", \"{existing}\")""",)
 MDP_FIELDS_OF_INTEREST_AND_INDEX_TUPLE = (("JURSCODE",0), ("ACCTID",0), ("DIGXCORD",0),
                                           ( "DIGYCORD",0), ("RESITYP",0), ("ADDRESS",0),
                                           ("STRTUNT",0), ("CITY",0), ("ZIPCODE",0),

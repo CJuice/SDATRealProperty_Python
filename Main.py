@@ -1,4 +1,6 @@
 """Python version of the Real Property data process"""
+#NOTE: Look into Sodapy for Socrata data interactions. May be able to upsert etc right from here instead of generating csv to upload.
+
 # IMPORTS
 import ProcessVariables
 import ProcessFunctions
@@ -58,22 +60,25 @@ def mainfunction():
                 for key in local_MDP_field_index_dictionary.keys():
                     assert key in MDP_line_data_list
                     local_MDP_field_index_dictionary[key] = MDP_line_data_list.index(key)
+                    # Build list of field name and field value pairs as tuples in a list
+                    if ProcessVariables.mdp_field_names_tuple == None:
+                        ProcessVariables.mdp_field_names_tuple = tuple([(key, key) for key in local_MDP_field_index_dictionary.keys()])
+                        # print(ProcessVariables.mdp_field_names_tuple)
                 # print("Dictionary of MDP index positions for important fields: \n{}".format(local_MDP_field_index_dictionary)) #TESTING
                 counter_mdp += 1
                 continue
-            print("should only show when counter_mdp > 0...counter_mdp={}".format(counter_mdp))
 
             # Work on Data
             # NOTE: Primary key has a database index by default
-            # Build list of field name and field value pairs as tuples in a list
-            field_names_tuple = tuple([(key,key) for key in local_MDP_field_index_dictionary.keys()])
-            field_values_tuple = tuple([(str(key).lower(),MDP_line_data_list[value]) for key,value in local_MDP_field_index_dictionary.items()])
+            field_values_list = [(str(key).lower(),MDP_line_data_list[value]) for key,value in local_MDP_field_index_dictionary.items()]
+            field_values_list = ProcessFunctions.handle_empty_values_for_sql_success(field_values_list)
+            field_values_list = ProcessFunctions.handle_quotation_marks_for_sql_success(field_values_list)
+            field_values_tuple = tuple(field_values_list)
             ProcessFunctions.insert_record_into_table(cursor=connection_to_production_database_cursor,
                                                       table_name_tuple=ProcessVariables.MDP_TABLE_NAME,
-                                                      field_names_tuple=field_names_tuple,
+                                                      field_names_tuple=ProcessVariables.mdp_field_names_tuple,
                                                       field_values_tuple=field_values_tuple)
-            #STOPPED
-            #TODO: Record contained an empty value and the sql fails. need to deal with nulls in data entry
+
             if counter_mdp > 0 and counter_mdp % 10000 == 0:
                 connection_to_production_database.commit()
                 ProcessFunctions.print_and_log(
